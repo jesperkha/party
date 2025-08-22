@@ -1,0 +1,10 @@
+{
+	"lastUpdated": "2025-08-22T18:06:42.4510817+02:00",
+	"fields": {
+		"PORT": {
+			"required": true,
+			"format": ":{number}",
+			"key": "PORT"
+		}
+	}
+}
