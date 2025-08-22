@@ -9,9 +9,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jesperkha/notifier"
 	"github.com/jesperkha/pipoker/config"
+	"github.com/jesperkha/pipoker/ws"
 )
 
 type Server struct {
+	ws     *ws.Server
 	mux    *chi.Mux
 	config *config.Config
 }
@@ -20,13 +22,21 @@ func New(config *config.Config) *Server {
 	mux := chi.NewMux()
 	mux.Use(middleware.Logger)
 
+	ws := ws.NewServer()
+
 	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to PiPoker!"))
+		http.ServeFile(w, r, "web/index.html")
+	})
+	mux.Get("/client.js", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/client.js")
 	})
 
+	mux.Get("/connect", ws.ConnectHandler())
+
 	return &Server{
-		mux:    mux,
-		config: config,
+		ws,
+		mux,
+		config,
 	}
 }
 
@@ -37,6 +47,8 @@ func (s *Server) ListenAndServe(notif *notifier.Notifier) {
 		Addr:    s.config.Port,
 		Handler: s.mux,
 	}
+
+	go s.ws.Run(notif)
 
 	go func() {
 		<-done
