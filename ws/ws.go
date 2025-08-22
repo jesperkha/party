@@ -25,7 +25,8 @@ const (
 	MsgResults  MessageType = "results"  // Show results from question answers
 
 	// Client types
-	MsgReady MessageType = "ready" // I have finished setup and am ready to play
+	MsgReady  MessageType = "ready"  // I have finished setup and am ready to play
+	MsgAnswer MessageType = "answer" // Here is my answer for this question
 
 	// Host types
 	MsgNextQuestion MessageType = "next" // Move on to next question
