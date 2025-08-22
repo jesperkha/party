@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<div class="flex flex-col gap-4">
+			<p>Num players: <span id="num-players"></span></p>
+			<p>Question: <span id="question"></span></p>
+			<p>Answered: <span id="answered"></span></p>
+			<button onclick="nextQuestion()">Next Question</button>
+		</div>
+	</body>
+
+	<script>
+		const wsUrl = "ws://" + location.host + "/host"
+		const ws = new WebSocket(wsUrl)
+
+		ws.onerror = () => {
+			window.location.href = "error.html"
+		}
+
+		ws.onopen = () => {}
+		ws.onclose = () => {}
+
+		ws.onmessage = event => {
+			try {
+				const data = JSON.parse(event.data)
+
+				switch (data.type) {
+					case "question":
+						document.getElementById("question").innerText = data.question
+				}
+			} catch (e) {
+				log.textContent += `Failed to parse message: ${event.data}\n`
+			}
+		}
+
+		function nextQuestion() {
+			ws.send(
+				JSON.stringify({
+					type: "next",
+				})
+			)
+		}
+	</script>
+</html>

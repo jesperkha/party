@@ -22,9 +22,13 @@ const (
 	// Server types
 	MsgQuestion MessageType = "question" // Asking a new question now, waiting for you answer
 	MsgSetup    MessageType = "setup"    // Prompt setup questions
+	MsgResults  MessageType = "results"  // Show results from question answers
 
 	// Client types
 	MsgReady MessageType = "ready" // I have finished setup and am ready to play
+
+	// Host types
+	MsgNextQuestion MessageType = "next" // Move on to next question
 )
 
 type Player struct {
@@ -38,6 +42,10 @@ type ServerMessage struct {
 	// Setup
 	Prompts []string `json:"prompts"`
 	Players []Player `json:"players"`
+
+	// Question
+	Question string   `json:"question"`
+	Options  []string `json:"options"`
 }
 
 type ClientMessage struct {
@@ -55,6 +63,7 @@ type ClientMessage struct {
 }
 
 type Server struct {
+	host    *Client
 	clients map[uint]*Client
 	notif   *notifier.Notifier
 
@@ -100,9 +109,21 @@ func (s *Server) Run(notif *notifier.Notifier) {
 					log.Println("Error sending message to client:", err)
 				}
 			}
+			if err := s.host.Conn.WriteJSON(msg); err != nil {
+				log.Println("Error sending message to host")
+			}
 
-		case ans := <-s.in:
-			log.Printf("got answer from client %d: option %d", ans.clientId, ans.Choice)
+		case msg := <-s.in:
+			switch msg.Type {
+			case MsgNextQuestion:
+				s.out <- ServerMessage{
+					Type:     MsgQuestion,
+					Question: "What is your name?",
+				}
+
+			default:
+				log.Println("unhandled client message")
+			}
 
 		case <-done:
 			log.Println("WebSocket server shutting down")
@@ -134,6 +155,25 @@ func (s *Server) ConnectHandler() http.HandlerFunc {
 
 		log.Println("Client connected")
 		s.ConnectNew(conn, name)
+	}
+}
+
+func (s *Server) ConnectHostHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Println("Failed to upgrade connection:", err)
+			return
+		}
+
+		s.host = &Client{
+			ID:   s.nextId(),
+			Name: "HOST",
+			Conn: conn,
+		}
+
+		go s.readPump(s.host, s.notif)
+		log.Println("Host connected")
 	}
 }
 
@@ -171,7 +211,7 @@ func (s *Server) readPump(client *Client, notif *notifier.Notifier) {
 			msgType, msg, err := client.Conn.ReadMessage()
 			if err != nil {
 				log.Println("Read error:", err)
-				continue
+				return
 			}
 
 			switch msgType {
@@ -181,7 +221,7 @@ func (s *Server) readPump(client *Client, notif *notifier.Notifier) {
 				var message ClientMessage
 				if err := json.Unmarshal(msg, &message); err != nil {
 					log.Println("failed to parse json message")
-					continue
+					return
 				}
 
 				message.clientId = client.ID
