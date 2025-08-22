@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Poker Party — Quiz</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+		<style>
+			html,
+			body {
+				height: 100%;
+			}
+			body {
+				font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+			}
+		</style>
+	</head>
+	<body class="min-h-screen bg-gradient-to-br from-fuchsia-600 via-violet-600 to-sky-500 text-white flex flex-col">
+		<header class="flex justify-between items-center p-4 text-base sm:text-lg font-bold">
+			<div id="username-display">Username</div>
+			<div id="code-display">Code</div>
+		</header>
+		<main class="flex-grow flex items-center justify-center">
+			<div class="grid grid-cols-2 gap-4 p-4 w-full max-w-md" id="options-container">
+				<button
+					onclick="buttonClicked(1)"
+					class="aspect-square rounded-xl bg-red-500 hover:bg-red-600 text-7xl font-bold shadow-lg flex items-center justify-center"
+				>
+					▲
+				</button>
+				<button
+					onclick="buttonClicked(2)"
+					class="aspect-square rounded-xl bg-blue-500 hover:bg-blue-600 text-9xl font-bold shadow-lg flex items-center justify-center"
+				>
+					●
+				</button>
+				<button
+					onclick="buttonClicked(3)"
+					class="aspect-square rounded-xl bg-green-500 hover:bg-green-600 text-7xl font-bold shadow-lg flex items-center justify-center"
+				>
+					■
+				</button>
+				<button
+					onclick="buttonClicked(4)"
+					class="aspect-square rounded-xl bg-yellow-500 hover:bg-yellow-600 text-7xl font-bold shadow-lg flex items-center justify-center"
+				>
+					◆
+				</button>
+			</div>
+		</main>
+
+		<p id="log" class="p-4 text-sm"></p>
+
+		<script>
+			const username = sessionStorage.getItem("username")
+			const code = sessionStorage.getItem("code")
+
+			document.getElementById("username-display").textContent = username
+			document.getElementById("code-display").textContent = code
+
+			const log = document.getElementById("log")
+
+			const wsUrl = "ws://" + location.host + `/connect?name=${username}&code=${code}`
+			const ws = new WebSocket(wsUrl)
+
+			ws.onerror = () => {
+				window.location.href = "error.html"
+			}
+
+			ws.onopen = () => {
+				log.textContent += `Connected to ${wsUrl}\n`
+			}
+
+			ws.onmessage = event => {
+				try {
+					const data = JSON.parse(event.data)
+					log.textContent += data
+
+					switch (data.type) {
+						case "question":
+							showButtons()
+					}
+				} catch (e) {
+					log.textContent += `Failed to parse message: ${event.data}\n`
+				}
+			}
+
+			ws.onclose = () => {
+				log.textContent += `Connection closed\n`
+			}
+
+			function buttonClicked(num) {
+				console.log("Button clicked:", num)
+				hideOptions()
+
+				ws.send(
+					JSON.stringify({
+						choice: num,
+					})
+				)
+			}
+
+			function hideOptions() {
+				document.getElementById("options-container").classList.add("hidden")
+			}
+
+			function showButtons() {
+				document.getElementById("options-container").classList.remove("hidden")
+			}
+		</script>
+	</body>
+</html>

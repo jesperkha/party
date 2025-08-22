@@ -24,13 +24,7 @@ func New(config *config.Config) *Server {
 
 	ws := ws.NewServer()
 
-	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "web/index.html")
-	})
-	mux.Get("/client.js", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "web/client.js")
-	})
-
+	mux.Handle("/*", http.FileServer(http.Dir("web")))
 	mux.Get("/connect", ws.ConnectHandler())
 
 	return &Server{

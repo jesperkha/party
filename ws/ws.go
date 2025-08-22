@@ -16,9 +16,20 @@ type Client struct {
 	Conn   *websocket.Conn
 }
 
-type broadcast struct {
-	sender  uint // id of sender
-	message Message
+type MessageType string
+
+const (
+	MsgQuestion MessageType = "question" // Asking a new question now, waiting for you answer
+)
+
+type Message struct {
+	Type    MessageType `json:"type"`
+	Content string      `json:"content"`
+}
+
+type Answer struct {
+	clientId uint
+	Choice   uint `json:"choice"` // 1-4
 }
 
 type Server struct {
@@ -27,7 +38,8 @@ type Server struct {
 
 	connect    chan *Client
 	disconnect chan *Client
-	broadcast  chan broadcast
+	broadcast  chan Message
+	answer     chan Answer
 
 	ids uint
 }
@@ -36,9 +48,10 @@ func NewServer() *Server {
 	return &Server{
 		notif:      notifier.New(),
 		clients:    make(map[uint]*Client),
-		connect:    make(chan *Client),
-		disconnect: make(chan *Client),
-		broadcast:  make(chan broadcast),
+		connect:    make(chan *Client, 100),
+		disconnect: make(chan *Client, 100),
+		broadcast:  make(chan Message, 100),
+		answer:     make(chan Answer, 100),
 	}
 }
 
@@ -57,14 +70,15 @@ func (s *Server) Run(notif *notifier.Notifier) {
 			log.Printf("Client %d disconnected: %s", client.ID, client.Name)
 
 		case msg := <-s.broadcast:
+			log.Println("sending broadcast: ", msg)
 			for _, client := range s.clients {
-				if client.ID == msg.sender {
-					continue // do not send to sender
-				}
-				if err := client.Conn.WriteJSON(msg.message); err != nil {
+				if err := client.Conn.WriteJSON(msg); err != nil {
 					log.Println("Error sending message to client:", err)
 				}
 			}
+
+		case ans := <-s.answer:
+			log.Printf("got answer from client %d: option %d", ans.clientId, ans.Choice)
 
 		case <-done:
 			log.Println("WebSocket server shutting down")
@@ -73,7 +87,6 @@ func (s *Server) Run(notif *notifier.Notifier) {
 			return
 		}
 	}
-
 }
 
 var upgrader = websocket.Upgrader{
@@ -89,8 +102,14 @@ func (s *Server) ConnectHandler() http.HandlerFunc {
 			return
 		}
 
+		name := r.URL.Query().Get("name")
+		if name == "" {
+			http.Error(w, "must have name", http.StatusBadRequest)
+			return
+		}
+
 		log.Println("Client connected")
-		s.ConnectNew(conn, r.URL.Query().Get("name"))
+		s.ConnectNew(conn, name)
 	}
 }
 
@@ -134,16 +153,13 @@ func (s *Server) readPump(client *Client, notif *notifier.Notifier) {
 			switch msgType {
 			case websocket.TextMessage:
 				log.Printf("Received message from client %d: %s", client.ID, msg)
-				var msgParsed Message
-				if err := json.Unmarshal(msg, &msgParsed); err != nil {
+				var answer Answer
+				if err := json.Unmarshal(msg, &answer); err != nil {
 					log.Println("failed to parse json message")
 					continue
 				}
-
-				s.broadcast <- broadcast{
-					sender:  client.ID,
-					message: msgParsed,
-				}
+				answer.clientId = client.ID
+				s.answer <- answer
 
 			case websocket.CloseMessage:
 				log.Printf("Client %d closed the connection", client.ID)
