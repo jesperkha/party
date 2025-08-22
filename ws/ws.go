@@ -19,17 +19,39 @@ type Client struct {
 type MessageType string
 
 const (
+	// Server types
 	MsgQuestion MessageType = "question" // Asking a new question now, waiting for you answer
+	MsgSetup    MessageType = "setup"    // Prompt setup questions
+
+	// Client types
+	MsgReady MessageType = "ready" // I have finished setup and am ready to play
 )
 
-type Message struct {
-	Type    MessageType `json:"type"`
-	Content string      `json:"content"`
+type Player struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
 }
 
-type Answer struct {
-	clientId uint
-	Choice   uint `json:"choice"` // 1-4
+type ServerMessage struct {
+	Type MessageType `json:"type"`
+
+	// Setup
+	Prompts []string `json:"prompts"`
+	Players []Player `json:"players"`
+}
+
+type ClientMessage struct {
+	clientId uint        // set upon recv
+	Type     MessageType `json:"type"`
+
+	// Answer
+	Choice uint `json:"choice"` // 1-4
+
+	// Ready
+	MostLikely     string `json:"mostLikely"`
+	WouldYouRather string `json:"wouldYouRather"`
+	TakeAShot      uint   `json:"takeAShot"` // id
+	BlindAnswer    string `json:"blindAnswer"`
 }
 
 type Server struct {
@@ -38,8 +60,8 @@ type Server struct {
 
 	connect    chan *Client
 	disconnect chan *Client
-	broadcast  chan Message
-	answer     chan Answer
+	out        chan ServerMessage
+	in         chan ClientMessage
 
 	ids uint
 }
@@ -50,8 +72,8 @@ func NewServer() *Server {
 		clients:    make(map[uint]*Client),
 		connect:    make(chan *Client, 100),
 		disconnect: make(chan *Client, 100),
-		broadcast:  make(chan Message, 100),
-		answer:     make(chan Answer, 100),
+		out:        make(chan ServerMessage, 100),
+		in:         make(chan ClientMessage, 100),
 	}
 }
 
@@ -65,11 +87,13 @@ func (s *Server) Run(notif *notifier.Notifier) {
 			s.clients[client.ID] = client
 			log.Printf("Client %d connected: %s", client.ID, client.Name)
 
+			s.BeginGame()
+
 		case client := <-s.disconnect:
 			delete(s.clients, client.ID)
 			log.Printf("Client %d disconnected: %s", client.ID, client.Name)
 
-		case msg := <-s.broadcast:
+		case msg := <-s.out:
 			log.Println("sending broadcast: ", msg)
 			for _, client := range s.clients {
 				if err := client.Conn.WriteJSON(msg); err != nil {
@@ -77,7 +101,7 @@ func (s *Server) Run(notif *notifier.Notifier) {
 				}
 			}
 
-		case ans := <-s.answer:
+		case ans := <-s.in:
 			log.Printf("got answer from client %d: option %d", ans.clientId, ans.Choice)
 
 		case <-done:
@@ -153,13 +177,15 @@ func (s *Server) readPump(client *Client, notif *notifier.Notifier) {
 			switch msgType {
 			case websocket.TextMessage:
 				log.Printf("Received message from client %d: %s", client.ID, msg)
-				var answer Answer
-				if err := json.Unmarshal(msg, &answer); err != nil {
+
+				var message ClientMessage
+				if err := json.Unmarshal(msg, &message); err != nil {
 					log.Println("failed to parse json message")
 					continue
 				}
-				answer.clientId = client.ID
-				s.answer <- answer
+
+				message.clientId = client.ID
+				s.in <- message
 
 			case websocket.CloseMessage:
 				log.Printf("Client %d closed the connection", client.ID)
@@ -167,6 +193,27 @@ func (s *Server) readPump(client *Client, notif *notifier.Notifier) {
 			}
 		}
 	}
+}
+
+func (s *Server) BeginGame() {
+	players := []Player{}
+	for _, client := range s.clients {
+		players = append(players, Player{
+			ID:   client.ID,
+			Name: client.Name,
+		})
+	}
+
+	setup := ServerMessage{
+		Type: MsgSetup,
+		Prompts: []string{
+			"foo",
+			"bar",
+		},
+		Players: players,
+	}
+
+	s.out <- setup
 }
 
 func (s *Server) nextId() uint {
