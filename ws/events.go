@@ -53,6 +53,12 @@ func (s *Server) onClientMessage(msg ClientMessage) {
 			s.showResults()
 		}
 
+	case MsgPurge:
+		for i := range s.clients {
+			delete(s.clients, i)
+		}
+		log.Println("purged all connections")
+
 	case MsgTimer, MsgNextQuestion:
 		s.nextQuestion()
 

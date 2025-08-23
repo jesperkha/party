@@ -29,6 +29,13 @@
             >
                 Start!
             </button>
+            <button
+                id=""
+                class="mb-10 px-6 py-3 bg-red-500 hover:bg-red-600 text-xl font-bold rounded-2xl shadow-lg transition"
+                onclick="purgeConnections(); document.getElementById('players').innerHTML = ''"
+            >
+                Purge
+            </button>
 
             <script>
                 const colors = [
@@ -325,6 +332,14 @@
             ws.send(
                 JSON.stringify({
                     type: "next",
+                })
+            );
+        }
+
+        function purgeConnections() {
+            ws.send(
+                JSON.stringify({
+                    type: "purge",
                 })
             );
         }

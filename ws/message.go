@@ -19,6 +19,7 @@ const (
 	// Host types
 	MsgNextQuestion MessageType = "next"  // Move on to next question
 	MsgBegin        MessageType = "begin" // All players have joined, begin game
+	MsgPurge        MessageType = "purge" // Purge all active connections
 	MsgTimer        MessageType = "timer" // Timer ran out
 )
 
