@@ -253,6 +253,7 @@
                 switch (data.type) {
                     case "question":
                         showTransition(() => {
+                            document.getElementById("questions").classList.remove("hidden");
                             setQuestion(data.question.text);
                             const options = data.question.options;
                             for (let i = 0; i < options.length; i++) {
@@ -261,12 +262,22 @@
                             }
                             startTimer();
                         });
+                        break;
 
                     case "results":
                         showResults(data.results);
+                        break;
 
                     case "joined":
                         addPlayer(data.player.name);
+                        break;
+
+                    case "finish":
+                        showTransition(() => {
+                            sessionStorage.setItem("players", JSON.stringify(data.players));
+                            window.location.href = "podium.html";
+                        });
+                        break;
                 }
             } catch (e) {
                 console.log(e);
@@ -276,7 +287,6 @@
 
         function beginGame() {
             document.getElementById("waiting").classList.add("hidden");
-            document.getElementById("questions").classList.remove("hidden");
             ws.send(
                 JSON.stringify({
                     type: "begin",

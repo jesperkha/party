@@ -7,6 +7,7 @@ type App struct {
 	ready       int      // number of players ready
 	answered    int      // number of players that have answered the current question
 	curQ        Question // Current question
+	done        bool     // Is the game over?
 }
 
 type Player struct {
@@ -52,9 +53,12 @@ func (a *App) Player(id uint) Player {
 	return a.players[id]
 }
 
-// Get the top three players in order by highest points (highest first).
 func (a *App) Podium() []Player {
-	return nil
+	players := []Player{}
+	for _, p := range a.players {
+		players = append(players, p)
+	}
+	return players
 }
 
 // Get a randomly chosen question from the remaining pool of prompts.
@@ -62,7 +66,7 @@ func (a *App) NextQuestion() Question {
 	q := Question{
 		Text: "Hva sier Ole Brum?",
 		Options: []Option{
-			{Text: "Bæ"},
+			{Text: "Bæ", owner: 2},
 			{Text: "Mø"},
 			{Text: "Hei"},
 			{Text: "Hade"},
@@ -71,6 +75,7 @@ func (a *App) NextQuestion() Question {
 
 	a.answered = 0
 	a.curQ = q
+	a.done = true
 	return q
 }
 
@@ -78,6 +83,12 @@ func (a *App) NextQuestion() Question {
 func (a *App) Answer(playerId, choice uint) {
 	a.curQ.Options[choice].Votes++
 	a.answered++
+
+	if a.curQ.Options[choice].owner == playerId {
+		p := a.players[playerId]
+		p.Points += 1
+		a.players[playerId] = p
+	}
 }
 
 // Get results from this round
@@ -103,4 +114,8 @@ func (a *App) Ready() bool {
 // Has everyone answered?
 func (a *App) Answered() bool {
 	return a.answered == len(a.players)
+}
+
+func (a *App) Done() bool {
+	return a.done
 }

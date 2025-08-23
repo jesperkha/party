@@ -106,6 +106,14 @@ func (s *Server) showResults() {
 }
 
 func (s *Server) nextQuestion() {
+	if s.app.Done() {
+		s.host.Conn.WriteJSON(ServerMessage{
+			Type:    MsgFinish,
+			Players: s.app.Podium(),
+		})
+		return
+	}
+
 	q := s.app.NextQuestion()
 	s.out <- ServerMessage{
 		Type:     MsgQuestion,

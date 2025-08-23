@@ -10,6 +10,7 @@ const (
 	MsgSetup    MessageType = "setup"    // Prompt setup questions
 	MsgResults  MessageType = "results"  // Show results from question answers
 	MsgJoined   MessageType = "joined"   // A new player has joined
+	MsgFinish   MessageType = "finish"   // Game is finished, show results
 
 	// Client types
 	MsgReady  MessageType = "ready"  // I have finished setup and am ready to play

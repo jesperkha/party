@@ -162,7 +162,7 @@
             });
         </script>
 
-        <p id="log" class="p-4 text-sm"></p>
+        <p id="log" class="p-4 text-sm hidden"></p>
 
         <script>
             const username = sessionStorage.getItem("username");
@@ -192,9 +192,11 @@
                     switch (data.type) {
                         case "question":
                             showButtons();
+                            break;
 
                         case "setup":
                             openGameSetup(data.prompts[0], data.prompts[1], data.players);
+                            break;
                     }
                 } catch (e) {
                     log.textContent += `Failed to parse message: ${event.data}\n`;
