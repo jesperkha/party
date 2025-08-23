@@ -9,7 +9,10 @@ import (
 
 func RandomBlindQuestion() string {
 	qs := []string{
-		"Noe som oppfyller krav",
+		"Dette sier jeg til mamma før jeg legger meg...",
+		"Noe man sier til en skuffa trener:",
+		"Motto til en Sigma ulv",
+		"Quote fra en Facebook mom",
 	}
 	r := rand.Intn(len(qs))
 	return qs[r]
@@ -17,7 +20,11 @@ func RandomBlindQuestion() string {
 
 func randomBlindPairing() string {
 	qs := []string{
-		"Spørsmål som er motsatt av krav",
+		"Før Hitler døde sa han...",
+		"Noe man sier etter sex",
+		"Etter begravelsen tenkte jeg...",
+		"Jeg dro opp buksa og sa",
+		"I fetteren min sin 10års bursdag sang jeg...",
 	}
 	r := rand.Intn(len(qs))
 	return qs[r]

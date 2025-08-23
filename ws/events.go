@@ -30,6 +30,10 @@ func (s *Server) onClientDisconnected(client *Client) {
 func (s *Server) onServerBroadcast(msg ServerMessage) {
 	log.Println("sending broadcast: ", msg)
 	for _, client := range s.clients {
+		msg.Prompts = []string{
+			app.Prompt(),
+			app.RandomBlindQuestion(),
+		}
 		if err := client.Conn.WriteJSON(msg); err != nil {
 			log.Println("Error sending message to client:", err)
 		}
