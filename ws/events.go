@@ -1,6 +1,11 @@
 package ws
 
-import "log"
+import (
+	"log"
+	"math/rand"
+
+	"github.com/jesperkha/pipoker/app"
+)
 
 func (s *Server) onClientConnected(client *Client) {
 	s.clients[client.ID] = client
@@ -8,7 +13,7 @@ func (s *Server) onClientConnected(client *Client) {
 	// Notify host of new player
 	s.host.Conn.WriteJSON(ServerMessage{
 		Type:   MsgJoined,
-		Player: Player{ID: client.ID, Name: client.Name},
+		Player: app.Player{ID: client.ID, Name: client.Name},
 	})
 
 	log.Printf("Client %d connected: %s", client.ID, client.Name)
@@ -34,37 +39,76 @@ func (s *Server) onServerBroadcast(msg ServerMessage) {
 
 func (s *Server) onClientMessage(msg ClientMessage) {
 	switch msg.Type {
-	case MsgNextQuestion:
-		s.out <- ServerMessage{
-			Type:     MsgQuestion,
-			Question: "What is your name?",
+	case MsgReady:
+		s.app.PlayerReady(msg.clientId)
+		if s.app.Ready() {
+			s.beginRound()
 		}
 
 	case MsgBegin:
-		log.Println("starting game")
+		s.beginGame()
+
+	case MsgAnswer:
+		s.app.Answer(msg.clientId, msg.Choice)
+		if s.app.Answered() {
+			s.showResults()
+		}
+
+	case MsgTimer, MsgNextQuestion:
+		s.nextQuestion()
 
 	default:
 		log.Println("unhandled client message")
 	}
 }
 
-func (s *Server) BeginGame() {
-	players := []Player{}
+func (s *Server) beginGame() {
+	players := []app.Player{}
 	for _, client := range s.clients {
-		players = append(players, Player{
+		players = append(players, app.Player{
 			ID:   client.ID,
 			Name: client.Name,
 		})
 	}
 
+	s.app = app.New(players)
+
 	setup := ServerMessage{
 		Type: MsgSetup,
 		Prompts: []string{
-			"foo",
-			"bar",
+			"Hvem er mest sannsynlig til å...",
+			randomBlindQuestion(),
 		},
 		Players: players,
 	}
 
 	s.out <- setup
+}
+
+func randomBlindQuestion() string {
+	questions := []string{
+		"Noe man sier til småbarn",
+	}
+
+	n := rand.Intn(len(questions))
+	return questions[n]
+}
+
+func (s *Server) beginRound() {
+	s.nextQuestion()
+}
+
+func (s *Server) showResults() {
+	s.host.Conn.WriteJSON(ServerMessage{
+		Type:    MsgResults,
+		Results: s.app.RoundResults(),
+	})
+}
+
+func (s *Server) nextQuestion() {
+	q := s.app.NextQuestion()
+	s.out <- ServerMessage{
+		Type:     MsgQuestion,
+		Question: q,
+	}
 }

@@ -3,13 +3,16 @@ package app
 type App struct {
 	roundNr     int
 	totalRounds int // Calculcated from number of questions
-	players     []Player
+	players     map[uint]Player
+	ready       int      // number of players ready
+	answered    int      // number of players that have answered the current question
+	curQ        Question // Current question
 }
 
 type Player struct {
-	ID     uint
-	Name   string
-	Points int
+	ID     uint   `json:"id"`
+	Name   string `json:"name"`
+	Points int    `json:"points"`
 
 	// Their questions for this round
 	MostLikely     string
@@ -19,13 +22,14 @@ type Player struct {
 }
 
 type Question struct {
-	Text    string
-	Options []Option
+	Text    string   `json:"text"`
+	Options []Option `json:"options"`
 }
 
 type Option struct {
-	Text  string // Prompt raw text
-	Owner uint   // Id of player owning this prompt
+	Text  string `json:"text"` // Prompt raw text
+	Votes int    `json:"votes"`
+	owner uint   // Id of player owning this prompt
 }
 
 type Result struct {
@@ -34,9 +38,18 @@ type Result struct {
 }
 
 func New(players []Player) *App {
-	return &App{
-		players: players,
+	pmap := make(map[uint]Player)
+	for _, p := range players {
+		pmap[p.ID] = p
 	}
+
+	return &App{
+		players: pmap,
+	}
+}
+
+func (a *App) Player(id uint) Player {
+	return a.players[id]
 }
 
 // Get the top three players in order by highest points (highest first).
@@ -46,14 +59,48 @@ func (a *App) Podium() []Player {
 
 // Get a randomly chosen question from the remaining pool of prompts.
 func (a *App) NextQuestion() Question {
-	return Question{}
+	q := Question{
+		Text: "Hva sier Ole Brum?",
+		Options: []Option{
+			{Text: "Bæ"},
+			{Text: "Mø"},
+			{Text: "Hei"},
+			{Text: "Hade"},
+		},
+	}
+
+	a.answered = 0
+	a.curQ = q
+	return q
 }
 
 // Report a players answer to the current question.
 func (a *App) Answer(playerId, choice uint) {
+	a.curQ.Options[choice].Votes++
+	a.answered++
 }
 
 // Get results from this round
-func (a *App) RoundResults() []Result {
-	return nil
+func (a *App) RoundResults() []int {
+	res := []int{}
+	for _, opt := range a.curQ.Options {
+		res = append(res, opt.Votes)
+	}
+
+	return res
+}
+
+// Mark a player as ready
+func (a *App) PlayerReady(id uint) {
+	a.ready += 1
+}
+
+// Is everyone ready to play?
+func (a *App) Ready() bool {
+	return a.ready == len(a.players)
+}
+
+// Has everyone answered?
+func (a *App) Answered() bool {
+	return a.answered == len(a.players)
 }

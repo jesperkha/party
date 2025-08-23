@@ -1,223 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Poker Party — Quiz</title>
-		<script src="https://cdn.tailwindcss.com"></script>
-		<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-		<style>
-			html,
-			body {
-				height: 100%;
-			}
-			body {
-				font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
-			}
-		</style>
-	</head>
-	<body class="min-h-screen bg-gradient-to-br from-fuchsia-600 via-violet-600 to-sky-500 text-white flex flex-col">
-		<header class="flex justify-between items-center p-4 text-base sm:text-lg font-bold">
-			<div id="username-display">Username</div>
-			<div id="code-display">Code</div>
-		</header>
-		<main class="flex-grow flex items-center justify-center">
-			<div class="grid grid-cols-2 gap-4 p-4 w-full max-w-md hidden" id="options-container">
-				<button
-					onclick="buttonClicked(1)"
-					class="aspect-square rounded-xl bg-red-500 hover:bg-red-600 text-7xl font-bold shadow-lg flex items-center justify-center"
-				>
-					▲
-				</button>
-				<button
-					onclick="buttonClicked(2)"
-					class="aspect-square rounded-xl bg-blue-500 hover:bg-blue-600 text-9xl font-bold shadow-lg flex items-center justify-center"
-				>
-					●
-				</button>
-				<button
-					onclick="buttonClicked(3)"
-					class="aspect-square rounded-xl bg-green-500 hover:bg-green-600 text-7xl font-bold shadow-lg flex items-center justify-center"
-				>
-					■
-				</button>
-				<button
-					onclick="buttonClicked(4)"
-					class="aspect-square rounded-xl bg-yellow-500 hover:bg-yellow-600 text-7xl font-bold shadow-lg flex items-center justify-center"
-				>
-					◆
-				</button>
-			</div>
-			<p id="waiting">Waiting...</p>
-		</main>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Poker Party — Quiz</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+        <style>
+            html,
+            body {
+                height: 100%;
+            }
+            body {
+                font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+            }
+        </style>
+    </head>
+    <body class="min-h-screen bg-gradient-to-br from-fuchsia-600 via-violet-600 to-sky-500 text-white flex flex-col">
+        <header class="flex justify-between items-center p-4 text-base sm:text-lg font-bold">
+            <div id="username-display">Username</div>
+            <div id="code-display">Code</div>
+        </header>
+        <main class="flex-grow flex items-center justify-center">
+            <div class="grid grid-cols-2 gap-4 p-4 w-full max-w-md hidden" id="options-container">
+                <button
+                    onclick="buttonClicked(1)"
+                    class="aspect-square rounded-xl bg-red-500 hover:bg-red-600 text-7xl font-bold shadow-lg flex items-center justify-center"
+                >
+                    ▲
+                </button>
+                <button
+                    onclick="buttonClicked(2)"
+                    class="aspect-square rounded-xl bg-blue-500 hover:bg-blue-600 text-9xl font-bold shadow-lg flex items-center justify-center"
+                >
+                    ●
+                </button>
+                <button
+                    onclick="buttonClicked(3)"
+                    class="aspect-square rounded-xl bg-green-500 hover:bg-green-600 text-7xl font-bold shadow-lg flex items-center justify-center"
+                >
+                    ■
+                </button>
+                <button
+                    onclick="buttonClicked(4)"
+                    class="aspect-square rounded-xl bg-yellow-500 hover:bg-yellow-600 text-7xl font-bold shadow-lg flex items-center justify-center"
+                >
+                    ◆
+                </button>
+            </div>
+            <p id="waiting">Waiting...</p>
+        </main>
 
-		<!-- Popup Overlay -->
-		<div id="game-setup-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-			<div class="bg-white text-gray-800 rounded-2xl shadow-2xl p-6 w-11/12 max-w-md">
-				<h2 class="text-2xl font-extrabold mb-4 text-center">Game Setup</h2>
+        <!-- Popup Overlay -->
+        <div id="game-setup-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white text-gray-800 rounded-2xl shadow-2xl p-6 w-11/12 max-w-md">
+                <h2 class="text-2xl font-extrabold mb-4 text-center">Game Setup</h2>
 
-				<form id="game-setup-form" class="space-y-4">
-					<!-- Most likely to -->
-					<div>
-						<label id="most-likely" class="block text-lg font-semibold mb-1"> Who is most likely to... </label>
-						<input
-							type="text"
-							name="mostLikely"
-							placeholder="Fill in the blank"
-							class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-							required
-						/>
-					</div>
+                <form id="game-setup-form" class="space-y-4">
+                    <!-- Most likely to -->
+                    <div>
+                        <label id="most-likely" class="block text-lg font-semibold mb-1">
+                            Who is most likely to...
+                        </label>
+                        <input
+                            type="text"
+                            name="mostLikely"
+                            placeholder="Fill in the blank"
+                            class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                            required
+                        />
+                    </div>
 
-					<!-- Would you rather -->
-					<div>
-						<label class="block text-lg font-semibold mb-1"> A bad thing for "Would you rather" </label>
-						<input
-							type="text"
-							name="wouldYouRather"
-							placeholder="Enter something bad"
-							class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-							required
-						/>
-					</div>
+                    <!-- Would you rather -->
+                    <div>
+                        <label class="block text-lg font-semibold mb-1"> A bad thing for "Would you rather" </label>
+                        <input
+                            type="text"
+                            name="wouldYouRather"
+                            placeholder="Enter something bad"
+                            class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                            required
+                        />
+                    </div>
 
-					<!-- Who should take a shot -->
-					<div>
-						<label class="block text-lg font-semibold mb-1"> Who should take a shot? </label>
-						<select
-							name="takeAShot"
-							class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-							required
-							id="name-dropdown"
-						></select>
-					</div>
+                    <!-- Who should take a shot -->
+                    <div>
+                        <label class="block text-lg font-semibold mb-1"> Who should take a shot? </label>
+                        <select
+                            name="takeAShot"
+                            class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                            required
+                            id="name-dropdown"
+                        ></select>
+                    </div>
 
-					<!-- Worst way to say goodbye -->
-					<div>
-						<label id="blind-answer" class="block text-lg font-semibold mb-1"> Worst way to say goodbye </label>
-						<input
-							type="text"
-							name="blindAnswer"
-							placeholder="Your answer"
-							class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-							required
-						/>
-					</div>
+                    <!-- Worst way to say goodbye -->
+                    <div>
+                        <label id="blind-answer" class="block text-lg font-semibold mb-1">
+                            Worst way to say goodbye
+                        </label>
+                        <input
+                            type="text"
+                            name="blindAnswer"
+                            placeholder="Your answer"
+                            class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                            required
+                        />
+                    </div>
 
-					<!-- Actions -->
-					<div class="flex justify-end gap-4 mt-6">
-						<button
-							type="button"
-							onclick="closeGameSetup()"
-							class="px-4 py-2 rounded-xl bg-gray-300 hover:bg-gray-400 font-bold"
-						>
-							Cancel
-						</button>
-						<button type="submit" class="px-4 py-2 rounded-xl bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold">
-							Start Game
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
+                    <!-- Actions -->
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button
+                            type="button"
+                            onclick="closeGameSetup()"
+                            class="px-4 py-2 rounded-xl bg-gray-300 hover:bg-gray-400 font-bold"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 rounded-xl bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold"
+                        >
+                            Start Game
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-		<script>
-			function openGameSetup(prompt1, prompt2, clients) {
-				document.getElementById("game-setup-popup").classList.remove("hidden")
+        <script>
+            function openGameSetup(prompt1, prompt2, clients) {
+                document.getElementById("game-setup-popup").classList.remove("hidden");
 
-				document.getElementById("most-likely").innerText = prompt1
-				document.getElementById("blind-answer").innerText = prompt2
+                document.getElementById("most-likely").innerText = prompt1;
+                document.getElementById("blind-answer").innerText = prompt2;
 
-				const nameDropdown = document.getElementById("name-dropdown")
-				clients.forEach(client => {
-					nameDropdown.innerHTML += `<option value="${client.id}">${client.name}</option>`
-				})
-			}
+                const nameDropdown = document.getElementById("name-dropdown");
+                clients.forEach((client) => {
+                    nameDropdown.innerHTML += `<option value="${client.id}">${client.name}</option>`;
+                });
+            }
 
-			function closeGameSetup() {
-				document.getElementById("game-setup-popup").classList.add("hidden")
-			}
+            function closeGameSetup() {
+                document.getElementById("game-setup-popup").classList.add("hidden");
+            }
 
-			document.getElementById("game-setup-form").addEventListener("submit", function (event) {
-				event.preventDefault()
-				const formData = new FormData(this)
-				const data = {
-					type: "ready",
-					mostLikely: formData.get("mostLikely"),
-					wouldYouRather: formData.get("wouldYouRather"),
-					takeAShot: Number(formData.get("takeAShot")),
-					blindAnswer: formData.get("blindAnswer"),
-				}
+            document.getElementById("game-setup-form").addEventListener("submit", function (event) {
+                event.preventDefault();
+                const formData = new FormData(this);
+                const data = {
+                    type: "ready",
+                    mostLikely: formData.get("mostLikely"),
+                    wouldYouRather: formData.get("wouldYouRather"),
+                    takeAShot: Number(formData.get("takeAShot")),
+                    blindAnswer: formData.get("blindAnswer"),
+                };
 
-				ws.send(JSON.stringify(data))
-				console.log("Form submitted:", data)
-				closeGameSetup()
-			})
-		</script>
+                ws.send(JSON.stringify(data));
+                console.log("Form submitted:", data);
+                closeGameSetup();
+            });
+        </script>
 
-		<p id="log" class="p-4 text-sm"></p>
+        <p id="log" class="p-4 text-sm"></p>
 
-		<script>
-			const username = sessionStorage.getItem("username")
-			const code = sessionStorage.getItem("code")
+        <script>
+            const username = sessionStorage.getItem("username");
+            const code = sessionStorage.getItem("code");
 
-			document.getElementById("username-display").textContent = username
-			document.getElementById("code-display").textContent = code
+            document.getElementById("username-display").textContent = username;
+            document.getElementById("code-display").textContent = code;
 
-			const log = document.getElementById("log")
+            const log = document.getElementById("log");
 
-			const wsUrl = "ws://" + location.host + `/connect?name=${username}&code=${code}`
-			const ws = new WebSocket(wsUrl)
+            const wsUrl = "ws://" + location.host + `/connect?name=${username}&code=${code}`;
+            const ws = new WebSocket(wsUrl);
 
-			ws.onerror = () => {
-				window.location.href = "error.html"
-			}
+            ws.onerror = () => {
+                window.location.href = "error.html";
+            };
 
-			ws.onopen = () => {
-				log.textContent += `Connected to ${wsUrl}\n`
-			}
+            ws.onopen = () => {
+                log.textContent += `Connected to ${wsUrl}\n`;
+            };
 
-			ws.onmessage = event => {
-				try {
-					const data = JSON.parse(event.data)
-					log.textContent += data
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    log.textContent += data;
 
-					switch (data.type) {
-						case "question":
-							showButtons()
+                    switch (data.type) {
+                        case "question":
+                            showButtons();
 
-						case "setup":
-							openGameSetup(data.prompts[0], data.prompts[1], data.players)
-					}
-				} catch (e) {
-					log.textContent += `Failed to parse message: ${event.data}\n`
-				}
-			}
+                        case "setup":
+                            openGameSetup(data.prompts[0], data.prompts[1], data.players);
+                    }
+                } catch (e) {
+                    log.textContent += `Failed to parse message: ${event.data}\n`;
+                }
+            };
 
-			ws.onclose = () => {
-				log.textContent += `Connection closed\n`
-			}
+            ws.onclose = () => {
+                log.textContent += `Connection closed\n`;
+            };
 
-			function buttonClicked(num) {
-				console.log("Button clicked:", num)
-				hideOptions()
+            function buttonClicked(num) {
+                console.log("Button clicked:", num);
+                hideOptions();
 
-				ws.send(
-					JSON.stringify({
-						choice: num,
-					})
-				)
-			}
+                ws.send(
+                    JSON.stringify({
+                        type: "answer",
+                        choice: num - 1,
+                    })
+                );
+            }
 
-			function hideOptions() {
-				document.getElementById("options-container").classList.add("hidden")
-				document.getElementById("waiting").classList.remove("hidden")
-			}
+            function hideOptions() {
+                document.getElementById("options-container").classList.add("hidden");
+                document.getElementById("waiting").classList.remove("hidden");
+            }
 
-			function showButtons() {
-				document.getElementById("options-container").classList.remove("hidden")
-				document.getElementById("waiting").classList.add("hidden")
-			}
-		</script>
-	</body>
+            function showButtons() {
+                document.getElementById("options-container").classList.remove("hidden");
+                document.getElementById("waiting").classList.add("hidden");
+            }
+        </script>
+    </body>
 </html>

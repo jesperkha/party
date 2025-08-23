@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/jesperkha/notifier"
+	"github.com/jesperkha/pipoker/app"
 )
 
 type Client struct {
@@ -25,6 +26,8 @@ type Server struct {
 	disconnect chan *Client
 	out        chan ServerMessage
 	in         chan ClientMessage
+
+	app *app.App
 
 	ids uint
 }

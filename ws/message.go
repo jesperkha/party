@@ -1,5 +1,7 @@
 package ws
 
+import "github.com/jesperkha/pipoker/app"
+
 type MessageType string
 
 const (
@@ -16,26 +18,24 @@ const (
 	// Host types
 	MsgNextQuestion MessageType = "next"  // Move on to next question
 	MsgBegin        MessageType = "begin" // All players have joined, begin game
+	MsgTimer        MessageType = "timer" // Timer ran out
 )
-
-type Player struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
-}
 
 type ServerMessage struct {
 	Type MessageType `json:"type"`
 
 	// Setup
-	Prompts []string `json:"prompts"`
-	Players []Player `json:"players"`
+	Prompts []string     `json:"prompts"`
+	Players []app.Player `json:"players"`
 
 	// Question
-	Question string   `json:"question"`
-	Options  []string `json:"options"`
+	Question app.Question `json:"question"`
 
 	// Joined
-	Player Player `json:"player"`
+	Player app.Player `json:"player"`
+
+	// Results
+	Results []int `json:"results"`
 }
 
 type ClientMessage struct {
