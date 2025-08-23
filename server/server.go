@@ -25,7 +25,7 @@ func New(config *config.Config) *Server {
 	ws := ws.NewServer()
 
 	mux.Handle("/*", http.FileServer(http.Dir("web")))
-	mux.Get("/connect", ws.ConnectHandler())
+	mux.Get("/connect", ws.ConnectClientHandler())
 	mux.Get("/host", ws.ConnectHostHandler())
 
 	return &Server{

@@ -1,49 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Document</title>
-	</head>
-	<body>
-		<div class="flex flex-col gap-4">
-			<p>Num players: <span id="num-players"></span></p>
-			<p>Question: <span id="question"></span></p>
-			<p>Answered: <span id="answered"></span></p>
-			<button onclick="nextQuestion()">Next Question</button>
-		</div>
-	</body>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Poker Party — Host</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+        <style>
+            html,
+            body {
+                height: 100%;
+            }
+            body {
+                font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+            }
+        </style>
+    </head>
 
-	<script>
-		const wsUrl = "ws://" + location.host + "/host"
-		const ws = new WebSocket(wsUrl)
+    <body class="bg-gradient-to-br from-fuchsia-600 via-violet-600 to-sky-500">
+        <div
+            id="waiting"
+            class="min-h-screen text-white flex flex-col items-center justify-center text-center gap-12 hidden"
+        >
+            <h1 class="text-4xl sm:text-5xl font-extrabold mb-6">Venter på spillere...</h1>
 
-		ws.onerror = () => {
-			window.location.href = "error.html"
-		}
+            <div id="players" class="grid grid-cols-2 sm:grid-cols-3 gap-4 w-11/12 max-w-2xl"></div>
+            <button
+                id="startGameBtn"
+                class="mb-10 px-6 py-3 bg-pink-500 hover:bg-pink-600 text-xl font-bold rounded-2xl shadow-lg transition"
+                onclick="startGame()"
+            >
+                Start!
+            </button>
 
-		ws.onopen = () => {}
-		ws.onclose = () => {}
+            <script>
+                const colors = [
+                    "bg-red-500",
+                    "bg-blue-500",
+                    "bg-green-500",
+                    "bg-yellow-500",
+                    "bg-purple-500",
+                    "bg-pink-500",
+                    "bg-indigo-500",
+                    "bg-teal-500",
+                ];
 
-		ws.onmessage = event => {
-			try {
-				const data = JSON.parse(event.data)
+                function getRandomColor() {
+                    return colors[Math.floor(Math.random() * colors.length)];
+                }
 
-				switch (data.type) {
-					case "question":
-						document.getElementById("question").innerText = data.question
-				}
-			} catch (e) {
-				log.textContent += `Failed to parse message: ${event.data}\n`
-			}
-		}
+                function addPlayer(name) {
+                    const playersDiv = document.getElementById("players");
+                    const playerTag = document.createElement("div");
+                    playerTag.className = `${getRandomColor()} bg-opacity-80 rounded-xl p-4 text-lg font-bold shadow-lg`;
+                    playerTag.textContent = name;
+                    playersDiv.appendChild(playerTag);
+                }
+            </script>
+        </div>
 
-		function nextQuestion() {
-			ws.send(
-				JSON.stringify({
-					type: "next",
-				})
-			)
-		}
-	</script>
+        <div
+            class="min-h-screen bg-gradient-to-br from-fuchsia-600 via-violet-600 to-sky-500 text-white flex flex-col items-center justify-center text-center p-6"
+        >
+            <p id="question" class="text-3xl lg:text-4xl font-extrabold mb-10">Waiting for question...</p>
+
+            <div class="grid grid-cols-2 gap-6 w-full max-w-4xl">
+                <button
+                    id="option-1"
+                    class="bg-red-500 rounded-2xl px-6 py-8 flex items-center text-xl font-bold shadow-lg"
+                >
+                    <span class="text-4xl mr-4">▲</span>
+                    <span class="option-text">Placeholder 1</span>
+                </button>
+                <button
+                    id="option-2"
+                    class="bg-blue-500 rounded-2xl px-6 py-8 flex items-center text-xl font-bold shadow-lg"
+                >
+                    <span class="text-4xl mr-4">●</span>
+                    <span class="option-text">Placeholder 2</span>
+                </button>
+                <button
+                    id="option-3"
+                    class="bg-yellow-500 rounded-2xl px-6 py-8 flex items-center text-xl font-bold shadow-lg"
+                >
+                    <span class="text-4xl mr-4">■</span>
+                    <span class="option-text">Placeholder 3</span>
+                </button>
+                <button
+                    id="option-4"
+                    class="bg-green-500 rounded-2xl px-6 py-8 flex items-center text-xl font-bold shadow-lg"
+                >
+                    <span class="text-4xl mr-4">◆</span>
+                    <span class="option-text">Placeholder 4</span>
+                </button>
+            </div>
+
+            <div id="timer" class="w-full my-12 text-2xl lg:text-3xl font-extrabold">02:00</div>
+            <script>
+                function setQuestion(text) {
+                    document.getElementById("question").textContent = text;
+                }
+
+                function setOptionText(optionNumber, text) {
+                    const option = document.querySelector(`#option-${optionNumber} .option-text`);
+                    if (option) option.textContent = text;
+                }
+
+                // Timer
+                let timerInterval;
+                function startTimer() {
+                    let timeLeft = 120; // 2 minutes in seconds
+                    const timerDisplay = document.getElementById("timer");
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = formatTime(timeLeft);
+
+                    timerInterval = setInterval(() => {
+                        timeLeft--;
+                        timerDisplay.textContent = formatTime(timeLeft);
+
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            timerFinished();
+                        }
+                    }, 1000);
+                }
+
+                function formatTime(seconds) {
+                    const m = Math.floor(seconds / 60)
+                        .toString()
+                        .padStart(2, "0");
+                    const s = (seconds % 60).toString().padStart(2, "0");
+                    return `${m}:${s}`;
+                }
+
+                function timerFinished() {
+                    console.log("Timer finished!");
+                    // Add logic for what happens when timer ends
+                }
+
+                // showResults takes an array of 4 numbers: votes for each option
+                function showResults(results) {
+                    if (!results || results.length !== 4) return;
+
+                    const optionButtons = [
+                        document.getElementById("option-1"),
+                        document.getElementById("option-2"),
+                        document.getElementById("option-3"),
+                        document.getElementById("option-4"),
+                    ];
+
+                    // Store original text to restore later
+                    const originalTexts = optionButtons.map((btn) => btn.querySelector(".option-text").textContent);
+
+                    // Find max votes for winner
+                    const maxVotes = Math.max(...results);
+                    let winnerIndex = results.indexOf(maxVotes);
+
+                    let completedAnimations = 0;
+
+                    optionButtons.forEach((btn, i) => {
+                        const voteSpan = document.createElement("span");
+                        voteSpan.className = "ml-4 font-bold text-lg";
+                        btn.appendChild(voteSpan);
+
+                        let count = 0;
+                        const target = results[i];
+                        const increment = target / 50; // ~50 steps
+                        const interval = setInterval(() => {
+                            count += increment;
+                            if (count >= target) {
+                                count = target;
+                                clearInterval(interval);
+                                completedAnimations++;
+                                // If all animations done, show winner
+                                if (completedAnimations === optionButtons.length) {
+                                    highlightWinner();
+                                }
+                            }
+                            voteSpan.textContent = `${Math.round(count)}`;
+                        }, 20);
+                    });
+
+                    function highlightWinner() {
+                        const winnerBtn = optionButtons[winnerIndex];
+                        winnerBtn.classList.add("scale-110", "shadow-2xl");
+                        winnerBtn.style.transition = "transform 0.5s ease, box-shadow 0.5s ease";
+
+                        setTimeout(() => {
+                            // Reset everything after highlighting winner
+                            optionButtons.forEach((btn, i) => {
+                                btn.classList.remove("scale-[200%]", "shadow-2xl");
+                                const voteSpan = btn.querySelector("span.ml-4");
+                                if (voteSpan) voteSpan.remove();
+                                btn.querySelector(".option-text").textContent = originalTexts[i];
+                            });
+
+                            // Call resultsFinished after all reset
+                            resultsFinished();
+                        }, 3000); // keep winner highlighted for 1.5s
+                    }
+                }
+
+                function resultsFinished() {
+                    console.log("Results animation finished. Reset done.");
+                    // Add your logic to move to next question or show next screen
+                }
+
+                // Example usage:
+                // showResults([12, 8, 20, 5]);
+            </script>
+        </div>
+
+        <!-- Add this inside your body -->
+        <div
+            id="transition-overlay"
+            class="fixed inset-0 bg-black z-50 opacity-0 pointer-events-none transition-opacity duration-500"
+        ></div>
+
+        <script>
+            const overlay = document.getElementById("transition-overlay");
+
+            function showTransition(callback) {
+                // Fade in overlay
+                overlay.classList.remove("opacity-0", "pointer-events-none");
+                overlay.classList.add("opacity-100");
+
+                // Wait for fade-in to complete (500ms) then run callback
+                setTimeout(() => {
+                    if (callback) callback();
+
+                    // Fade out overlay after 300ms buffer
+                    setTimeout(() => {
+                        overlay.classList.remove("opacity-100");
+                        overlay.classList.add("opacity-0", "pointer-events-none");
+                    }, 300);
+                }, 500);
+            }
+
+            // showTransition(() => {
+            //   setQuestion("New question?");
+            //   setOptionText(1, "Option A");
+            //   setOptionText(2, "Option B");
+            //   setOptionText(3, "Option C");
+            //   setOptionText(4, "Option D");
+            // });
+        </script>
+    </body>
+    <script>
+        const wsUrl = "ws://" + location.host + "/host";
+        const ws = new WebSocket(wsUrl);
+
+        ws.onerror = () => {
+            window.location.href = "error.html";
+        };
+
+        ws.onopen = () => {};
+        ws.onclose = () => {};
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                console.log(data);
+
+                switch (data.type) {
+                    case "question":
+                        document.getElementById("question").innerText = data.question;
+
+                    case "joined":
+                        addPlayer(data.player.name);
+                }
+            } catch (e) {
+                console.log(e);
+                log.textContent += `Failed to parse message: ${event.data}\n`;
+            }
+        };
+
+        function nextQuestion() {
+            ws.send(
+                JSON.stringify({
+                    type: "next",
+                })
+            );
+        }
+
+        function beginGame() {
+            document.getElementById("waiting").classList.add("hidden");
+            ws.send(
+                JSON.stringify({
+                    type: "begin",
+                })
+            );
+        }
+    </script>
 </html>

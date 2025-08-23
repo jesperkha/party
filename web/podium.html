@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Poker Party — Podium</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+            }
+            body {
+                font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+            }
+            .container {
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+                gap: 4rem;
+                padding: 2rem;
+            }
+            .podium-container {
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+                height: 60vh;
+                gap: 2rem;
+                flex: 1;
+            }
+            .podium {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                align-items: center;
+                width: 140px;
+                transition: height 1s ease;
+                border-radius: 0.5rem;
+                position: relative;
+            }
+            .podium-label {
+                font-size: 1.75rem;
+                font-weight: 900;
+                text-align: center;
+                margin-bottom: 0.5rem;
+                position: absolute;
+                top: -2.5rem;
+                width: 100%;
+            }
+            .podium-points {
+                margin-top: 0.5rem;
+                font-weight: bold;
+                font-size: 1.25rem;
+            }
+            .score-list {
+                flex-basis: 250px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 1rem;
+                padding: 1rem;
+                overflow-y: auto;
+                max-height: 60vh;
+            }
+            .score-item {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-gradient-to-br from-fuchsia-600 via-violet-600 to-sky-500 text-white flex flex-col items-center justify-start"
+    >
+        <h1 class="text-5xl font-extrabold mb-8 mt-12">Podium</h1>
+
+        <div class="container">
+            <div class="podium-container" id="podium-container"></div>
+
+            <div class="score-list" id="score-list">
+                <h2 class="text-xl font-bold mb-4 text-center">All Players</h2>
+                <!-- Player scores added dynamically -->
+            </div>
+        </div>
+
+        <script>
+            // Read full player list from sessionStorage
+            let allPlayers = JSON.parse(sessionStorage.getItem("podium")) || [
+                { name: "Alice", points: 50 },
+                { name: "Bob", points: 35 },
+                { name: "Charlie", points: 20 },
+                { name: "David", points: 15 },
+                { name: "Eve", points: 10 },
+            ];
+
+            // Sort descending by points
+            allPlayers.sort((a, b) => b.points - a.points);
+
+            // Top 3 for podium
+            const podiumData = allPlayers.slice(0, 3);
+
+            const podiumContainer = document.getElementById("podium-container");
+            const scoreList = document.getElementById("score-list");
+            const colors = ["bg-yellow-400", "bg-gray-400", "bg-orange-500"];
+
+            // Build podium
+            podiumData.forEach((player, index) => {
+                const podiumDiv = document.createElement("div");
+                podiumDiv.className = `podium ${colors[index]} relative`;
+                podiumDiv.style.height = "50px";
+
+                const nameLabel = document.createElement("div");
+                nameLabel.className = "podium-label";
+                nameLabel.textContent = player.name;
+
+                const pointsLabel = document.createElement("div");
+                pointsLabel.className = "podium-points";
+                pointsLabel.textContent = "0";
+
+                podiumDiv.appendChild(nameLabel);
+                podiumDiv.appendChild(pointsLabel);
+                podiumContainer.appendChild(podiumDiv);
+
+                // Animate height and points
+                const maxHeight = 200 + player.points * 2;
+                let currentHeight = 50;
+                let currentPoints = 0;
+                const steps = 60;
+                const heightStep = (maxHeight - 50) / steps;
+                const pointsStep = player.points / steps;
+                let count = 0;
+
+                const interval = setInterval(() => {
+                    if (count >= steps) {
+                        clearInterval(interval);
+                        pointsLabel.textContent = player.points;
+                    } else {
+                        currentHeight += heightStep;
+                        currentPoints += pointsStep;
+                        podiumDiv.style.height = `${currentHeight}px`;
+                        pointsLabel.textContent = Math.round(currentPoints);
+                        count++;
+                    }
+                }, 25);
+            });
+
+            // Build full player score list
+            allPlayers.forEach((player) => {
+                const item = document.createElement("div");
+                item.className = "score-item";
+                const nameSpan = document.createElement("span");
+                nameSpan.textContent = player.name;
+                const pointsSpan = document.createElement("span");
+                pointsSpan.textContent = player.points;
+                item.appendChild(nameSpan);
+                item.appendChild(pointsSpan);
+                scoreList.appendChild(item);
+            });
+        </script>
+    </body>
+</html>

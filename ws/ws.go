@@ -16,53 +16,6 @@ type Client struct {
 	Conn   *websocket.Conn
 }
 
-type MessageType string
-
-const (
-	// Server types
-	MsgQuestion MessageType = "question" // Asking a new question now, waiting for you answer
-	MsgSetup    MessageType = "setup"    // Prompt setup questions
-	MsgResults  MessageType = "results"  // Show results from question answers
-
-	// Client types
-	MsgReady  MessageType = "ready"  // I have finished setup and am ready to play
-	MsgAnswer MessageType = "answer" // Here is my answer for this question
-
-	// Host types
-	MsgNextQuestion MessageType = "next" // Move on to next question
-)
-
-type Player struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
-}
-
-type ServerMessage struct {
-	Type MessageType `json:"type"`
-
-	// Setup
-	Prompts []string `json:"prompts"`
-	Players []Player `json:"players"`
-
-	// Question
-	Question string   `json:"question"`
-	Options  []string `json:"options"`
-}
-
-type ClientMessage struct {
-	clientId uint        // set upon recv
-	Type     MessageType `json:"type"`
-
-	// Answer
-	Choice uint `json:"choice"` // 1-4
-
-	// Ready
-	MostLikely     string `json:"mostLikely"`
-	WouldYouRather string `json:"wouldYouRather"`
-	TakeAShot      uint   `json:"takeAShot"` // id
-	BlindAnswer    string `json:"blindAnswer"`
-}
-
 type Server struct {
 	host    *Client
 	clients map[uint]*Client
@@ -94,39 +47,16 @@ func (s *Server) Run(notif *notifier.Notifier) {
 	for {
 		select {
 		case client := <-s.connect:
-			s.clients[client.ID] = client
-			log.Printf("Client %d connected: %s", client.ID, client.Name)
-
-			s.BeginGame()
+			s.onClientConnected(client)
 
 		case client := <-s.disconnect:
-			delete(s.clients, client.ID)
-			log.Printf("Client %d disconnected: %s", client.ID, client.Name)
+			s.onClientDisconnected(client)
 
 		case msg := <-s.out:
-			log.Println("sending broadcast: ", msg)
-			for _, client := range s.clients {
-				if err := client.Conn.WriteJSON(msg); err != nil {
-					log.Println("Error sending message to client:", err)
-				}
-			}
-			if s.host != nil {
-				if err := s.host.Conn.WriteJSON(msg); err != nil {
-					log.Println("Error sending message to host")
-				}
-			}
+			s.onServerBroadcast(msg)
 
 		case msg := <-s.in:
-			switch msg.Type {
-			case MsgNextQuestion:
-				s.out <- ServerMessage{
-					Type:     MsgQuestion,
-					Question: "What is your name?",
-				}
-
-			default:
-				log.Println("unhandled client message")
-			}
+			s.onClientMessage(msg)
 
 		case <-done:
 			log.Println("WebSocket server shutting down")
@@ -142,8 +72,13 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func (s *Server) ConnectHandler() http.HandlerFunc {
+func (s *Server) ConnectClientHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if s.host == nil {
+			http.Error(w, "Host must be connected to join game", http.StatusBadRequest)
+			return
+		}
+
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			log.Println("Failed to upgrade connection:", err)
@@ -236,27 +171,6 @@ func (s *Server) readPump(client *Client, notif *notifier.Notifier) {
 			}
 		}
 	}
-}
-
-func (s *Server) BeginGame() {
-	players := []Player{}
-	for _, client := range s.clients {
-		players = append(players, Player{
-			ID:   client.ID,
-			Name: client.Name,
-		})
-	}
-
-	setup := ServerMessage{
-		Type: MsgSetup,
-		Prompts: []string{
-			"foo",
-			"bar",
-		},
-		Players: players,
-	}
-
-	s.out <- setup
 }
 
 func (s *Server) nextId() uint {
