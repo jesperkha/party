@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"strings"
 )
@@ -9,6 +10,14 @@ import (
 func RandomBlindQuestion() string {
 	qs := []string{
 		"",
+	}
+	r := rand.Intn(len(qs))
+	return qs[r]
+}
+
+func randomBlindPairing() string {
+	qs := []string{
+		"Hello there?",
 	}
 	r := rand.Intn(len(qs))
 	return qs[r]
@@ -42,24 +51,52 @@ func (a *App) MakeQuestions() {
 		})
 	}
 
-	// Add would you rather
-	ps := a.Podium()
-	if len(ps)%2 != 0 {
-		ps = ps[1:]
-	}
-	for i := 0; i < len(ps); i += 2 {
-		p1 := ps[i]
-		p2 := ps[i+1]
+	{
+		// Add would you rather
+		ps := a.Podium()
+		if len(ps)%2 != 0 {
+			ps = ps[1:]
+		}
+		for i := 0; i < len(ps); i += 2 {
+			p1 := ps[i]
+			p2 := ps[i+1]
 
-		qs = append(qs, Question{
-			Text: "Vil du heller...",
-			Options: []Option{
-				{Text: p1.prompts.WouldYouRather, owner: p1.ID},
-				{Text: p2.prompts.WouldYouRather, owner: p2.ID},
-			},
-		})
+			qs = append(qs, Question{
+				Text: "Vil du heller...",
+				Options: []Option{
+					{Text: p1.prompts.WouldYouRather, owner: p1.ID},
+					{Text: p2.prompts.WouldYouRather, owner: p2.ID},
+				},
+			})
+		}
 	}
 
+	{
+		ps := a.Podium()
+		if len(ps) < 4 {
+			log.Fatal("must have more than 4 players")
+		}
+		for i := 0; i < len(ps); i += 4 {
+			p1 := ps[i]
+			p2 := ps[i+1]
+			p3 := ps[i+2]
+			p4 := ps[i+3]
+
+			q := Question{
+				Text: randomBlindPairing(),
+				Options: []Option{
+					{Text: p1.prompts.BlindAnswer, owner: p1.ID},
+					{Text: p2.prompts.BlindAnswer, owner: p2.ID},
+					{Text: p3.prompts.BlindAnswer, owner: p3.ID},
+					{Text: p4.prompts.BlindAnswer, owner: p4.ID},
+				},
+			}
+
+			qs = append(qs, q)
+		}
+	}
+
+	rand.Shuffle(len(qs), func(i, j int) { qs[i], qs[j] = qs[j], qs[i] })
 	a.questions = qs
 }
 
