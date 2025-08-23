@@ -7,19 +7,14 @@ type App struct {
 	ready       int      // number of players ready
 	answered    int      // number of players that have answered the current question
 	curQ        Question // Current question
-	done        bool     // Is the game over?
+	questions   []Question
 }
 
 type Player struct {
-	ID     uint   `json:"id"`
-	Name   string `json:"name"`
-	Points int    `json:"points"`
-
-	// Their questions for this round
-	MostLikely     string
-	WouldYouRather string
-	TakeAShot      uint
-	BlindAnswer    string
+	ID      uint   `json:"id"`
+	Name    string `json:"name"`
+	Points  int    `json:"points"`
+	prompts Prompts
 }
 
 type Question struct {
@@ -33,6 +28,13 @@ type Option struct {
 	owner uint   // Id of player owning this prompt
 }
 
+type Prompts struct {
+	MostLikely     string `json:"mostLikely"`
+	WouldYouRather string `json:"wouldYouRather"`
+	TakeAShot      uint   `json:"takeAShot"` // id
+	BlindAnswer    string `json:"blindAnswer"`
+}
+
 type Result struct {
 	Option string
 	Votes  int
@@ -44,9 +46,11 @@ func New(players []Player) *App {
 		pmap[p.ID] = p
 	}
 
-	return &App{
+	a := &App{
 		players: pmap,
 	}
+
+	return a
 }
 
 func (a *App) Player(id uint) Player {
@@ -63,19 +67,18 @@ func (a *App) Podium() []Player {
 
 // Get a randomly chosen question from the remaining pool of prompts.
 func (a *App) NextQuestion() Question {
-	q := Question{
-		Text: "Hva sier Ole Brum?",
-		Options: []Option{
-			{Text: "Bæ", owner: 2},
-			{Text: "Mø"},
-			{Text: "Hei"},
-			{Text: "Hade"},
-		},
+	if len(a.questions) == 0 {
+		return Question{
+			Text:    "",
+			Options: []Option{},
+		}
 	}
+
+	q := a.questions[0]
+	a.questions = a.questions[1:]
 
 	a.answered = 0
 	a.curQ = q
-	a.done = true
 	return q
 }
 
@@ -102,8 +105,11 @@ func (a *App) RoundResults() []int {
 }
 
 // Mark a player as ready
-func (a *App) PlayerReady(id uint) {
+func (a *App) PlayerReady(id uint, prompts Prompts) {
 	a.ready += 1
+	p := a.players[id]
+	p.prompts = prompts
+	a.players[id] = p
 }
 
 // Is everyone ready to play?
@@ -117,5 +123,5 @@ func (a *App) Answered() bool {
 }
 
 func (a *App) Done() bool {
-	return a.done
+	return len(a.questions) == 0
 }

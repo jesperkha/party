@@ -104,10 +104,20 @@
                     if (option) option.textContent = text;
                 }
 
+                function hideBottomOptions() {
+                    document.getElementById("option-3").classList.add("hidden");
+                    document.getElementById("option-4").classList.add("hidden");
+                }
+
+                function showBottomOptions() {
+                    document.getElementById("option-3").classList.remove("hidden");
+                    document.getElementById("option-4").classList.remove("hidden");
+                }
+
                 // Timer
                 let timerInterval;
                 function startTimer() {
-                    let timeLeft = 120; // 2 minutes in seconds
+                    let timeLeft = 30; // in seconds
                     const timerDisplay = document.getElementById("timer");
                     clearInterval(timerInterval);
                     timerDisplay.textContent = formatTime(timeLeft);
@@ -133,14 +143,18 @@
 
                 // showResults takes an array of 4 numbers: votes for each option
                 function showResults(results) {
-                    if (!results || results.length !== 4) return;
+                    if (!results) return;
 
-                    const optionButtons = [
+                    let optionButtons = [
                         document.getElementById("option-1"),
                         document.getElementById("option-2"),
                         document.getElementById("option-3"),
                         document.getElementById("option-4"),
                     ];
+
+                    if (results.length !== 4) {
+                        optionButtons = optionButtons.slice(0, 2);
+                    }
 
                     // Store original text to restore later
                     const originalTexts = optionButtons.map((btn) => btn.querySelector(".option-text").textContent);
@@ -256,6 +270,11 @@
                             document.getElementById("questions").classList.remove("hidden");
                             setQuestion(data.question.text);
                             const options = data.question.options;
+                            if (options.length < 4) {
+                                hideBottomOptions();
+                            } else {
+                                showBottomOptions();
+                            }
                             for (let i = 0; i < options.length; i++) {
                                 console.log(i + 1, options[i].text);
                                 setOptionText(i + 1, options[i].text);

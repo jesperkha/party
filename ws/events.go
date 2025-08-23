@@ -2,7 +2,6 @@ package ws
 
 import (
 	"log"
-	"math/rand"
 
 	"github.com/jesperkha/pipoker/app"
 )
@@ -40,7 +39,7 @@ func (s *Server) onServerBroadcast(msg ServerMessage) {
 func (s *Server) onClientMessage(msg ClientMessage) {
 	switch msg.Type {
 	case MsgReady:
-		s.app.PlayerReady(msg.clientId)
+		s.app.PlayerReady(msg.clientId, msg.Prompts)
 		if s.app.Ready() {
 			s.beginRound()
 		}
@@ -76,8 +75,8 @@ func (s *Server) beginGame() {
 	setup := ServerMessage{
 		Type: MsgSetup,
 		Prompts: []string{
-			"Hvem er mest sannsynlig til å...",
-			randomBlindQuestion(),
+			app.Prompt(),
+			app.RandomBlindQuestion(),
 		},
 		Players: players,
 	}
@@ -85,16 +84,8 @@ func (s *Server) beginGame() {
 	s.out <- setup
 }
 
-func randomBlindQuestion() string {
-	questions := []string{
-		"Noe man sier til småbarn",
-	}
-
-	n := rand.Intn(len(questions))
-	return questions[n]
-}
-
 func (s *Server) beginRound() {
+	s.app.MakeQuestions()
 	s.nextQuestion()
 }
 

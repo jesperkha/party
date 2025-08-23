@@ -47,8 +47,5 @@ type ClientMessage struct {
 	Choice uint `json:"choice"` // 1-4
 
 	// Ready
-	MostLikely     string `json:"mostLikely"`
-	WouldYouRather string `json:"wouldYouRather"`
-	TakeAShot      uint   `json:"takeAShot"` // id
-	BlindAnswer    string `json:"blindAnswer"`
+	Prompts app.Prompts `json:"prompts"`
 }

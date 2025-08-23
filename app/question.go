@@ -1,0 +1,83 @@
+package app
+
+import (
+	"fmt"
+	"math/rand"
+	"strings"
+)
+
+func RandomBlindQuestion() string {
+	qs := []string{
+		"",
+	}
+	r := rand.Intn(len(qs))
+	return qs[r]
+}
+
+func Prompt() string {
+	return "Hvem er mest sannsynlig til å..."
+}
+
+func (a *App) MakeQuestions() {
+	qs := []Question{}
+
+	// Add all "who is?" questions
+	for _, p := range a.players {
+		options := []Option{}
+		ps := a.fourRandomPlayers()
+		for _, p := range ps {
+			options = append(options, Option{
+				Text:  p.Name,
+				owner: p.ID,
+			})
+		}
+
+		text := strings.ToLower(p.prompts.MostLikely)
+		if text[len(text)-1] == '?' {
+			text = text[:len(text)-1]
+		}
+		qs = append(qs, Question{
+			Text:    fmt.Sprintf("%s %s?", Prompt(), text),
+			Options: options,
+		})
+	}
+
+	// Add would you rather
+	ps := a.Podium()
+	if len(ps)%2 != 0 {
+		ps = ps[1:]
+	}
+	for i := 0; i < len(ps); i += 2 {
+		p1 := ps[i]
+		p2 := ps[i+1]
+
+		qs = append(qs, Question{
+			Text: "Vil du heller...",
+			Options: []Option{
+				{Text: p1.prompts.WouldYouRather, owner: p1.ID},
+				{Text: p2.prompts.WouldYouRather, owner: p2.ID},
+			},
+		})
+	}
+
+	a.questions = qs
+}
+
+func (a *App) fourRandomPlayers() []Player {
+	m := a.players
+	keys := make([]uint, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+
+	rand.Shuffle(len(keys), func(i, j int) { keys[i], keys[j] = keys[j], keys[i] })
+
+	selected := keys[:4]
+
+	players := []Player{}
+	for _, k := range selected {
+		players = append(players, a.players[k])
+	}
+
+	return players
+}
