@@ -1,10 +1,11 @@
 {
-	"lastUpdated": "2025-08-22T18:06:42.4510817+02:00",
+	"lastUpdated": "2025-08-23T12:56:52.900985818+02:00",
 	"fields": {
 		"PORT": {
 			"required": true,
 			"format": ":{number}",
-			"key": "PORT"
+			"key": "PORT",
+			"default": ":8080"
 		}
 	}
 }

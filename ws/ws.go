@@ -110,8 +110,10 @@ func (s *Server) Run(notif *notifier.Notifier) {
 					log.Println("Error sending message to client:", err)
 				}
 			}
-			if err := s.host.Conn.WriteJSON(msg); err != nil {
-				log.Println("Error sending message to host")
+			if s.host != nil {
+				if err := s.host.Conn.WriteJSON(msg); err != nil {
+					log.Println("Error sending message to host")
+				}
 			}
 
 		case msg := <-s.in:
