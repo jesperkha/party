@@ -64,8 +64,8 @@ func (a *App) MakeQuestions() {
 			qs = append(qs, Question{
 				Text: "Vil du heller...",
 				Options: []Option{
-					{Text: p1.prompts.WouldYouRather, owner: p1.ID},
-					{Text: p2.prompts.WouldYouRather, owner: p2.ID},
+					{Text: p1.prompts.WouldYouRather, owner: p2.ID},
+					{Text: p2.prompts.WouldYouRather, owner: p1.ID},
 				},
 			})
 		}
@@ -76,7 +76,7 @@ func (a *App) MakeQuestions() {
 		if len(ps) < 4 {
 			log.Fatal("must have more than 4 players")
 		}
-		for i := 0; i < len(ps); i += 4 {
+		for i := 0; i+3 < len(ps); i += 4 {
 			p1 := ps[i]
 			p2 := ps[i+1]
 			p3 := ps[i+2]

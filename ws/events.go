@@ -20,6 +20,10 @@ func (s *Server) onClientConnected(client *Client) {
 
 func (s *Server) onClientDisconnected(client *Client) {
 	delete(s.clients, client.ID)
+	if s.app != nil {
+		s.app.Remove(client.ID)
+	}
+
 	log.Printf("Client %d disconnected: %s", client.ID, client.Name)
 }
 
@@ -59,7 +63,10 @@ func (s *Server) onClientMessage(msg ClientMessage) {
 		}
 		log.Println("purged all connections")
 
-	case MsgTimer, MsgNextQuestion:
+	case MsgTimer:
+		s.showResults()
+
+	case MsgNextQuestion:
 		s.nextQuestion()
 
 	default:

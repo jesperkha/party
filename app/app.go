@@ -53,6 +53,11 @@ func New(players []Player) *App {
 	return a
 }
 
+// Remove a player
+func (a *App) Remove(id uint) {
+	delete(a.players, id)
+}
+
 func (a *App) Player(id uint) Player {
 	return a.players[id]
 }
@@ -86,16 +91,17 @@ func (a *App) NextQuestion() Question {
 func (a *App) Answer(playerId, choice uint) {
 	a.curQ.Options[choice].Votes++
 	a.answered++
-
-	if a.curQ.Options[choice].owner == playerId {
-		p := a.players[playerId]
-		p.Points += 1
-		a.players[playerId] = p
-	}
 }
 
 // Get results from this round
 func (a *App) RoundResults() []int {
+	// Give points for each vote
+	for _, opt := range a.curQ.Options {
+		pl := a.players[opt.owner]
+		pl.Points += opt.Votes
+		a.players[opt.owner] = pl
+	}
+
 	res := []int{}
 	for _, opt := range a.curQ.Options {
 		res = append(res, opt.Votes)
