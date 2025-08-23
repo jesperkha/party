@@ -9,7 +9,7 @@ import (
 
 func RandomBlindQuestion() string {
 	qs := []string{
-		"",
+		"Noe som oppfyller krav",
 	}
 	r := rand.Intn(len(qs))
 	return qs[r]
@@ -17,7 +17,7 @@ func RandomBlindQuestion() string {
 
 func randomBlindPairing() string {
 	qs := []string{
-		"Hello there?",
+		"Spørsmål som er motsatt av krav",
 	}
 	r := rand.Intn(len(qs))
 	return qs[r]
