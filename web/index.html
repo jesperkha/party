@@ -1,75 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Poker Party — Join Lobby</title>
-		<script src="https://cdn.tailwindcss.com"></script>
-		<meta
-			name="description"
-			content="Join your friends' poker lobby. Enter a username and a lobby code to get started."
-		/>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-		<style>
-			html,
-			body {
-				height: 100%;
-			}
-			body {
-				font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans",
-					"Apple Color Emoji", "Segoe UI Emoji";
-			}
-		</style>
-	</head>
-	<body class="min-h-full bg-gradient-to-br from-fuchsia-600 via-violet-600 to-sky-500">
-		<main class="relative flex min-h-screen items-center justify-center p-6">
-			<section class="w-full max-w-md">
-				<div class="rounded-2xl bg-white/10 p-1 shadow-2xl backdrop-blur-xl ring-1 ring-white/20">
-					<div class="rounded-2xl bg-white/90 p-6 sm:p-8">
-						<header class="mb-6 text-center">
-							<h1
-								class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-600 via-violet-700 to-sky-700 drop-shadow"
-							>
-								Poker Party
-							</h1>
-							<p class="mt-2 text-sm text-slate-600">Jump into a lobby. Bring your best poker face.</p>
-						</header>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Poker Party — Join Lobby</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <meta
+            name="description"
+            content="Join your friends' poker lobby. Enter a username and a lobby code to get started."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+        <style>
+            html,
+            body {
+                height: 100%;
+            }
+            body {
+                font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans",
+                    "Apple Color Emoji", "Segoe UI Emoji";
+            }
+        </style>
+    </head>
+    <body class="min-h-full bg-gradient-to-br from-fuchsia-600 via-violet-600 to-sky-500">
+        <main class="relative flex min-h-screen items-center justify-center p-6">
+            <section class="w-full max-w-md">
+                <div class="rounded-2xl bg-white/10 p-1 shadow-2xl backdrop-blur-xl ring-1 ring-white/20">
+                    <div class="rounded-2xl bg-white/90 p-6 sm:p-8">
+                        <header class="mb-6 text-center">
+                            <h1
+                                class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-600 via-violet-700 to-sky-700 drop-shadow"
+                            >
+                                Party Party
+                            </h1>
+                            <p class="mt-2 text-sm text-slate-600">Jump into a lobby. Bring your best poker face.</p>
+                        </header>
 
-						<form id="join-form" action="#" method="post" novalidate class="space-y-5">
-							<div>
-								<label for="username" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700"
-									>Username</label
-								>
-								<div class="relative">
-									<span class="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											viewBox="0 0 24 24"
-											fill="currentColor"
-											class="h-5 w-5 text-slate-400"
-										>
-											<path d="M12 12a5 5 0 100-10 5 5 0 000 10z" />
-											<path d="M20 21a8 8 0 10-16 0 1 1 0 001 1h14a1 1 0 001-1z" />
-										</svg>
-									</span>
-									<input
-										id="username"
-										name="username"
-										type="text"
-										required
-										minlength="2"
-										maxlength="20"
-										placeholder="eg. AceMaster"
-										class="w-full rounded-xl border border-slate-300/80 bg-white px-10 py-3 text-slate-800 placeholder-slate-400 shadow-sm outline-none ring-0 transition focus:border-violet-500 focus:ring-2 focus:ring-violet-200"
-									/>
-								</div>
-								<p class="mt-1 hidden text-xs text-rose-600" id="username-error">
-									Please enter a username (2–20 characters).
-								</p>
-							</div>
-							<!-- 
+                        <form id="join-form" action="#" method="post" novalidate class="space-y-5">
+                            <div>
+                                <label
+                                    for="username"
+                                    class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700"
+                                    >Username</label
+                                >
+                                <div class="relative">
+                                    <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            class="h-5 w-5 text-slate-400"
+                                        >
+                                            <path d="M12 12a5 5 0 100-10 5 5 0 000 10z" />
+                                            <path d="M20 21a8 8 0 10-16 0 1 1 0 001 1h14a1 1 0 001-1z" />
+                                        </svg>
+                                    </span>
+                                    <input
+                                        id="username"
+                                        name="username"
+                                        type="text"
+                                        required
+                                        minlength="2"
+                                        maxlength="20"
+                                        placeholder="eg. AceMaster"
+                                        class="w-full rounded-xl border border-slate-300/80 bg-white px-10 py-3 text-slate-800 placeholder-slate-400 shadow-sm outline-none ring-0 transition focus:border-violet-500 focus:ring-2 focus:ring-violet-200"
+                                    />
+                                </div>
+                                <p class="mt-1 hidden text-xs text-rose-600" id="username-error">
+                                    Please enter a username (2–20 characters).
+                                </p>
+                            </div>
+                            <!-- 
 							<div>
 								<label for="code" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700"
 									>Lobby Code</label
@@ -104,64 +106,66 @@
 								</p>
 							</div> -->
 
-							<button
-								type="submit"
-								class="group relative inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-600 via-violet-600 to-sky-600 px-5 py-3 text-base font-extrabold text-white shadow-lg transition hover:brightness-110 active:scale-[.99] focus:outline-none"
-							>
-								<span>Join Game</span>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									class="h-5 w-5 transition group-hover:translate-x-0.5"
-								>
-									<path d="M13.5 4.5l6 7.5-6 7.5v-4.5H3v-6h10.5V4.5z" />
-								</svg>
-							</button>
+                            <button
+                                type="submit"
+                                class="group relative inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-600 via-violet-600 to-sky-600 px-5 py-3 text-base font-extrabold text-white shadow-lg transition hover:brightness-110 active:scale-[.99] focus:outline-none"
+                            >
+                                <span>Join Game</span>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    class="h-5 w-5 transition group-hover:translate-x-0.5"
+                                >
+                                    <path d="M13.5 4.5l6 7.5-6 7.5v-4.5H3v-6h10.5V4.5z" />
+                                </svg>
+                            </button>
 
-							<p class="text-center text-xs text-slate-500">By joining, you agree to keep it friendly ♥</p>
-						</form>
-					</div>
-				</div>
-			</section>
-		</main>
+                            <p class="text-center text-xs text-slate-500">
+                                By joining, you agree to keep it friendly ♥
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
 
-		<script>
-			const form = document.getElementById("join-form")
-			const username = document.getElementById("username")
-			// const code = document.getElementById("code")
-			const uErr = document.getElementById("username-error")
-			const cErr = document.getElementById("code-error")
+        <script>
+            const form = document.getElementById("join-form");
+            const username = document.getElementById("username");
+            // const code = document.getElementById("code")
+            const uErr = document.getElementById("username-error");
+            const cErr = document.getElementById("code-error");
 
-			function showValidity(input, errEl) {
-				if (input.validity.valid) {
-					errEl.classList.add("hidden")
-					input.classList.remove("border-rose-400", "focus:ring-rose-200")
-				} else {
-					errEl.classList.remove("hidden")
-					input.classList.add("border-rose-400")
-				}
-			}
+            function showValidity(input, errEl) {
+                if (input.validity.valid) {
+                    errEl.classList.add("hidden");
+                    input.classList.remove("border-rose-400", "focus:ring-rose-200");
+                } else {
+                    errEl.classList.remove("hidden");
+                    input.classList.add("border-rose-400");
+                }
+            }
 
-			username.addEventListener("input", () => showValidity(username, uErr))
-			// code.addEventListener("input", () => showValidity(code, cErr))
+            username.addEventListener("input", () => showValidity(username, uErr));
+            // code.addEventListener("input", () => showValidity(code, cErr))
 
-			form.addEventListener("submit", e => {
-				if (!form.checkValidity()) {
-					e.preventDefault()
-					showValidity(username, uErr)
-					showValidity(code, cErr)
-					return
-				}
-				e.preventDefault()
-				const payload = {
-					username: username.value.trim(),
-					// code: code.value.trim().toUpperCase(),
-				}
-				sessionStorage.setItem("username", payload.username)
-				// sessionStorage.setItem("code", payload.code)
-				window.location.href = "/lobby.html"
-			})
-		</script>
-	</body>
+            form.addEventListener("submit", (e) => {
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    showValidity(username, uErr);
+                    showValidity(code, cErr);
+                    return;
+                }
+                e.preventDefault();
+                const payload = {
+                    username: username.value.trim(),
+                    // code: code.value.trim().toUpperCase(),
+                };
+                sessionStorage.setItem("username", payload.username);
+                // sessionStorage.setItem("code", payload.code)
+                window.location.href = "/lobby.html";
+            });
+        </script>
+    </body>
 </html>
