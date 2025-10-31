@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/jesperkha/notifier"
@@ -15,12 +17,14 @@ type Client struct {
 	Name   string
 	Avatar uint
 	Conn   *websocket.Conn
+	New    bool
 }
 
 type Server struct {
-	host    *Client
-	clients map[uint]*Client
-	notif   *notifier.Notifier
+	sessionId uint
+	host      *Client
+	clients   map[uint]*Client
+	notif     *notifier.Notifier
 
 	connect    chan *Client
 	disconnect chan *Client
@@ -33,14 +37,18 @@ type Server struct {
 }
 
 func NewServer() *Server {
-	return &Server{
+	s := &Server{
 		notif:      notifier.New(),
 		clients:    make(map[uint]*Client),
 		connect:    make(chan *Client, 100),
 		disconnect: make(chan *Client, 100),
 		out:        make(chan ServerMessage, 100),
 		in:         make(chan ClientMessage, 100),
+		sessionId:  uint(time.Now().Unix()),
 	}
+
+	log.Printf("new session: %d", s.sessionId)
+	return s
 }
 
 func (s *Server) Run(notif *notifier.Notifier) {
@@ -94,8 +102,27 @@ func (s *Server) ConnectClientHandler() http.HandlerFunc {
 			return
 		}
 
+		userIdStr := r.URL.Query().Get("userId")
+		if name == "" {
+			http.Error(w, "must have sessionId", http.StatusBadRequest)
+			return
+		}
+
+		sessionIdStr := r.URL.Query().Get("sessionId")
+		if name == "" {
+			http.Error(w, "must have sessionId", http.StatusBadRequest)
+			return
+		}
+
+		sessionId, err := strconv.Atoi(sessionIdStr)
+		userId, err := strconv.Atoi(userIdStr)
+		if err != nil {
+			http.Error(w, "bad user or session id", http.StatusBadRequest)
+			return
+		}
+
 		log.Println("Client connected")
-		s.ConnectNew(conn, name)
+		s.ConnectNew(conn, name, uint(sessionId), uint(userId))
 	}
 }
 
@@ -113,18 +140,32 @@ func (s *Server) ConnectHostHandler() http.HandlerFunc {
 			Conn: conn,
 		}
 
+		s.sessionId = uint(time.Now().Unix())
+
 		go s.readPump(s.host, s.notif)
 		log.Println("Host connected")
 	}
 }
 
 // Connect new client to the server, returns the client instance with a unique ID.
-func (s *Server) ConnectNew(conn *websocket.Conn, name string) (*Client, error) {
+func (s *Server) ConnectNew(conn *websocket.Conn, name string, sessionId, userId uint) (*Client, error) {
+	id := uint(0)
+	isNew := true
+	if s.sessionId == sessionId {
+		log.Println("user connected with valid session")
+		id = userId
+		isNew = false
+	} else {
+		log.Println("user attempted invalid/expired session")
+		id = s.nextId()
+	}
+
 	client := &Client{
-		ID:     s.nextId(),
+		ID:     id,
 		Conn:   conn,
 		Name:   name,
 		Avatar: 0, // TODO: give random avatar
+		New:    isNew,
 	}
 
 	s.connect <- client

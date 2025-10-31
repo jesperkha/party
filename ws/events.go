@@ -6,13 +6,27 @@ import (
 	"github.com/jesperkha/pipoker/app"
 )
 
+type Session struct {
+	Type      string `json:"type"`
+	SessionID uint   `json:"session_id"`
+	UserID    uint   `json:"user_id"`
+}
+
 func (s *Server) onClientConnected(client *Client) {
 	s.clients[client.ID] = client
 
 	// Notify host of new player
-	s.host.Conn.WriteJSON(ServerMessage{
-		Type:   MsgJoined,
-		Player: app.Player{ID: client.ID, Name: client.Name},
+	if client.New {
+		s.host.Conn.WriteJSON(ServerMessage{
+			Type:   MsgJoined,
+			Player: app.Player{ID: client.ID, Name: client.Name},
+		})
+	}
+
+	client.Conn.WriteJSON(Session{
+		Type:      "session",
+		SessionID: s.sessionId,
+		UserID:    client.ID,
 	})
 
 	log.Printf("Client %d connected: %s", client.ID, client.Name)

@@ -50,7 +50,16 @@
                     ◆
                 </button>
             </div>
-            <p id="waiting">Waiting...</p>
+            <div class="flex flex-col" id="waiting">
+
+            <p class="p-4 text-center">Waiting...</p>
+			<a
+				href="index.html"
+				class="px-6 py-3 bg-pink-500 hover:bg-pink-600 text-xl font-bold rounded-2xl shadow-lg transition"
+			>
+				Go Back Home
+			</a>
+            </div>
         </main>
 
         <!-- Popup Overlay -->
@@ -177,7 +186,10 @@
 
             const log = document.getElementById("log");
 
-            const wsUrl = "ws://" + location.host + `/connect?name=${username}&code=${code}`;
+            const sessionId = localStorage.getItem("sessionId") ?? "0";
+            const userId = localStorage.getItem("userId") ?? "0";
+
+            const wsUrl = "ws://" + location.host + `/connect?name=${username}&code=${code}&sessionId=${sessionId}&userId=${userId}`;
             const ws = new WebSocket(wsUrl);
 
             ws.onerror = () => {
@@ -208,6 +220,11 @@
 
                         case "setup":
                             openGameSetup(data.prompts[0], data.prompts[1], data.players);
+                            break;
+                        
+                        case "session":
+                            localStorage.setItem("sessionId", data.session_id)
+                            localStorage.setItem("userId", data.user_id)
                             break;
                     }
                 } catch (e) {
